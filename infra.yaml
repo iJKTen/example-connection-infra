@@ -1,0 +1,147 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: GitHub CodeConnection and Git Sync IAM role for CI/CD pipelines.
+
+Resources:
+  SharedGitHubConnection:
+    Type: AWS::CodeConnections::Connection
+    Properties:
+      ConnectionName: github-org-connection
+      ProviderType: GitHub
+
+  CloudFormationGitSyncRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: CloudFormationGitSyncRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - cloudformation.sync.codeconnections.amazonaws.com
+                - cloudformation.amazonaws.com
+            Action: 'sts:AssumeRole'
+            Condition:
+              StringEquals:
+                'aws:SourceAccount': !Sub '${AWS::AccountId}'
+      Policies:
+        - PolicyName: GitSyncPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'cloudformation:CreateChangeSet'
+                  - 'cloudformation:DeleteChangeSet'
+                  - 'cloudformation:DescribeChangeSet'
+                  - 'cloudformation:DescribeStackEvents'
+                  - 'cloudformation:DescribeStacks'
+                  - 'cloudformation:ExecuteChangeSet'
+                  - 'cloudformation:GetTemplate'
+                  - 'cloudformation:ListChangeSets'
+                  - 'cloudformation:ListStacks'
+                  - 'cloudformation:ValidateTemplate'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'events:PutRule'
+                  - 'events:PutTargets'
+                  - 'events:DescribeRule'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'acm:RequestCertificate'
+                  - 'acm:DescribeCertificate'
+                  - 'acm:DeleteCertificate'
+                  - 'acm:AddTagsToCertificate'
+                  - 'acm:ListTagsForCertificate'
+                  - 'acm:ListCertificates'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'route53:ChangeResourceRecordSets'
+                  - 'route53:GetHostedZone'
+                  - 'route53:GetChange'
+                  - 'route53:ListResourceRecordSets'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 's3:CreateBucket'
+                  - 's3:DeleteBucket'
+                  - 's3:PutBucketPublicAccessBlock'
+                  - 's3:GetBucketPublicAccessBlock'
+                  - 's3:PutBucketVersioning'
+                  - 's3:GetBucketVersioning'
+                  - 's3:PutLifecycleConfiguration'
+                  - 's3:GetLifecycleConfiguration'
+                  - 's3:PutBucketTagging'
+                  - 's3:GetBucketTagging'
+                  - 's3:PutBucketPolicy'
+                  - 's3:GetBucketPolicy'
+                  - 's3:DeleteBucketPolicy'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'cloudfront:CreateDistribution'
+                  - 'cloudfront:UpdateDistribution'
+                  - 'cloudfront:DeleteDistribution'
+                  - 'cloudfront:GetDistribution'
+                  - 'cloudfront:TagResource'
+                  - 'cloudfront:CreateOriginAccessControl'
+                  - 'cloudfront:DeleteOriginAccessControl'
+                  - 'cloudfront:GetOriginAccessControl'
+                  - 'cloudfront:UpdateOriginAccessControl'
+                  - 'cloudfront:CreateResponseHeadersPolicy'
+                  - 'cloudfront:GetResponseHeadersPolicy'
+                  - 'cloudfront:UpdateResponseHeadersPolicy'
+                  - 'cloudfront:DeleteResponseHeadersPolicy'
+                  - 'cloudfront:CreateFunction'
+                  - 'cloudfront:GetFunction'
+                  - 'cloudfront:UpdateFunction'
+                  - 'cloudfront:DeleteFunction'
+                  - 'cloudfront:PublishFunction'
+                  - 'cloudfront:DescribeFunction'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'codepipeline:CreatePipeline'
+                  - 'codepipeline:UpdatePipeline'
+                  - 'codepipeline:DeletePipeline'
+                  - 'codepipeline:GetPipeline'
+                  - 'codepipeline:GetPipelineState'
+                  - 'codepipeline:TagResource'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'codebuild:CreateProject'
+                  - 'codebuild:UpdateProject'
+                  - 'codebuild:DeleteProject'
+                  - 'codebuild:BatchGetProjects'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'iam:CreateRole'
+                  - 'iam:GetRole'
+                  - 'iam:DeleteRole'
+                  - 'iam:PutRolePolicy'
+                  - 'iam:GetRolePolicy'
+                  - 'iam:DeleteRolePolicy'
+                  - 'iam:PassRole'
+                  - 'iam:TagRole'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'codestar-connections:PassConnection'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:DeleteLogGroup'
+                  - 'logs:PutRetentionPolicy'
+                Resource: '*'
+
+Outputs:
+  ExportedConnectionArn:
+    Value: !Ref SharedGitHubConnection
+    Export:
+      Name: Example-GitHubConnectionArn
