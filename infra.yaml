@@ -46,6 +46,12 @@ Resources:
                 Action:
                   - 'events:PutRule'
                   - 'events:PutTargets'
+                Resource: '*'
+                Condition:
+                  StringEquals:
+                    'events:ManagedBy': 'cloudformation.sync.codeconnections.amazonaws.com'
+              - Effect: Allow
+                Action:
                   - 'events:DescribeRule'
                 Resource: '*'
               - Effect: Allow
