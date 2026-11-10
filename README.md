@@ -1,6 +1,8 @@
 # GitHub Connection Infrastructure
 
-CloudFormation template that creates a CodeConnection to GitHub and the IAM role used by Sync from Git. The connection ARN is exported as a cross-stack value so site stacks can import it with `!ImportValue`.
+CloudFormation template that creates a CodeConnection to GitHub. The connection ARN is exported as a cross-stack value so the role, certificate, and site stacks can import it with `!ImportValue`.
+
+The Git Sync role moved to its own repo, `example-role-infra` (series post 3). See `docs/adr/0002-move-git-sync-role-to-own-repo.md`. This stack is now just the shared connection.
 
 ## Prerequisites
 
@@ -9,7 +11,6 @@ CloudFormation template that creates a CodeConnection to GitHub and the IAM role
 ## What Gets Created
 
 - One `AWS::CodeConnections::Connection` resource linked to GitHub
-- One `AWS::IAM::Role` (CloudFormationGitSyncRole) for Sync from Git with permissions for CloudFormation, EventBridge, ACM, Route 53, S3, CloudFront, CodePipeline, CodeBuild, IAM, CodeConnections, and CloudWatch Logs
 - One cross-stack export: `Example-GitHubConnectionArn`
 
 ## Manual Completion
@@ -32,6 +33,6 @@ The initial deploy is manual because Git Sync itself requires a connection to fu
 3. Name the stack (e.g. `connection-stack`).
 4. Create the stack and complete the manual connection steps above.
 
-After the Git Sync role is added to the template (series post 4), Git Sync is connected to this stack. From that point on, pushing changes to this repo updates the stack automatically. No more manual uploads.
+This stack is a one-time bootstrap. Once the connection is created and authorized, nothing here changes, so it stays manual and is not Git-synced (there is no `deployment-file.yaml`). The role, certificate, and site stacks are the ones Git Sync deploys.
 
 Deploy this stack before any site stacks. The site stacks use `!ImportValue Example-GitHubConnectionArn`, which only resolves after this stack reaches `CREATE_COMPLETE` and the connection is available.
